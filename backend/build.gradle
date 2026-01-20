@@ -1,0 +1,19 @@
+plugins {
+    id "org.springframework.boot" version "3.2.5" apply false
+    id "io.spring.dependency-management" version "1.1.4" apply false
+}
+
+subprojects {
+    group = "com.example.trading"
+    version = "0.0.1-SNAPSHOT"
+
+    repositories {
+        mavenCentral()
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+        options.encoding = "UTF-8"
+    }
+}

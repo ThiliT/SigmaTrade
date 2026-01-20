@@ -1,0 +1,93 @@
+services:
+  marketdata-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: marketdata
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5435:5432"
+
+  portfolio-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: portfolio
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5436:5432"
+
+  orders-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: orders
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5437:5432"
+
+  market-data-service:
+    build:
+      context: ./backend
+      dockerfile: market-data-service/Dockerfile
+    environment:
+      DB_URL: jdbc:postgresql://marketdata-db:5432/marketdata
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+    ports:
+      - "8081:8081"
+    depends_on:
+      - marketdata-db
+
+  portfolio-service:
+    build:
+      context: ./backend
+      dockerfile: portfolio-service/Dockerfile
+    environment:
+      DB_URL: jdbc:postgresql://portfolio-db:5432/portfolio
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      MARKETDATA_URL: http://market-data-service:8081
+    ports:
+      - "8082:8082"
+    depends_on:
+      - portfolio-db
+      - market-data-service
+
+  order-service:
+    build:
+      context: ./backend
+      dockerfile: order-service/Dockerfile
+    environment:
+      DB_URL: jdbc:postgresql://orders-db:5432/orders
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      MARKETDATA_URL: http://market-data-service:8081
+      PORTFOLIO_URL: http://portfolio-service:8082
+    ports:
+      - "8083:8083"
+    depends_on:
+      - orders-db
+      - market-data-service
+      - portfolio-service
+
+  risk-service:
+    build:
+      context: ./backend
+      dockerfile: risk-service/Dockerfile
+    environment:
+      MARKETDATA_URL: http://market-data-service:8081
+      PORTFOLIO_URL: http://portfolio-service:8082
+      RISK_ENGINE_URL: http://cpp-risk-engine:8090
+    ports:
+      - "8084:8084"
+    depends_on:
+      - market-data-service
+      - portfolio-service
+      - cpp-risk-engine
+
+  cpp-risk-engine:
+    build:
+      context: ./cpp-risk-engine
+    ports:
+      - "8090:8090"

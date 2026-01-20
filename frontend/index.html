@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Portfolio Control Center</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #111827;
+      --panel: #1f2937;
+      --accent: #22d3ee;
+      --accent-strong: #06b6d4;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --danger: #f87171;
+      --success: #34d399;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', Arial, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at 20% 20%, rgba(34,211,238,0.08), transparent 30%), radial-gradient(circle at 80% 0%, rgba(6,182,212,0.08), transparent 25%), var(--bg);
+      min-height: 100vh;
+      padding: 24px;
+    }
+    h1, h2, h3 { margin: 0; font-weight: 700; }
+    h2 { font-size: 1.1rem; color: var(--text); letter-spacing: 0.01em; }
+    p { margin: 0; color: var(--muted); }
+    a { color: var(--accent); }
+    .app {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .hero {
+      background: linear-gradient(135deg, rgba(34,211,238,0.14), rgba(17,24,39,0.7));
+      border: 1px solid rgba(255,255,255,0.04);
+      padding: 20px 24px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(34,211,238,0.1);
+      border: 1px solid rgba(34,211,238,0.3);
+      color: var(--accent);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    .card + .card { margin-top: 8px; }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 10px; }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    label { color: var(--muted); font-size: 0.9rem; }
+    input, select {
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.15s ease, transform 0.1s ease;
+    }
+    input:focus, select:focus {
+      border-color: rgba(34,211,238,0.6);
+      box-shadow: 0 0 0 2px rgba(34,211,238,0.1);
+      transform: translateY(-1px);
+    }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    button {
+      background: var(--accent-strong);
+      color: #0b1120;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform 0.1s ease, box-shadow 0.2s ease, background 0.2s ease;
+      box-shadow: 0 10px 20px rgba(6,182,212,0.25);
+    }
+    button.secondary {
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: none;
+    }
+    button:active { transform: translateY(1px); }
+    button:hover { background: var(--accent); }
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 10px;
+    }
+    .status-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--danger);
+    }
+    .status-dot.active { background: var(--success); }
+    .pill { padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,0.05); }
+    .output {
+      background: #0b1222;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 12px;
+      min-height: 200px;
+      color: #a5f3fc;
+      overflow: auto;
+      font-family: 'SFMono-Regular', Consolas, Menlo, monospace;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+    }
+    .helper {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 8px;
+    }
+    .helper .chip {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .steps {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .step {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      color: var(--text);
+      min-width: 180px;
+    }
+    .step span {
+      width: 22px; height: 22px;
+      display: grid; place-items: center;
+      border-radius: 8px;
+      background: rgba(34,211,238,0.14);
+      color: var(--accent);
+      font-weight: 700;
+    }
+    @media (max-width: 720px) {
+      body { padding: 16px; }
+      .grid { grid-template-columns: 1fr; }
+      button { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="hero">
+      <div class="badge">Portfolio Demo • REST only</div>
+      <h1 style="margin-top:10px;">Portfolio Control Center</h1>
+      <p class="subtitle">Follow the guided steps: create a portfolio, add holdings, place orders, then inspect value, P/L, and risk. All calls use the existing services.</p>
+      <div class="steps" style="margin-top:12px;">
+        <div class="step"><span>1</span> Create or select portfolio</div>
+        <div class="step"><span>2</span> Seed holdings</div>
+        <div class="step"><span>3</span> Place orders</div>
+        <div class="step"><span>4</span> View value & P/L</div>
+        <div class="step"><span>5</span> Check risk</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-header">
+          <h2>Step 1 — Portfolio</h2>
+          <div class="pill">POST /portfolios</div>
+        </div>
+        <p class="subtitle">Create a new portfolio or set an existing ID to work with across the app.</p>
+        <div class="field">
+          <label>Name</label>
+          <input id="pName" value="Demo Portfolio" placeholder="e.g., Growth 2025" />
+        </div>
+        <div class="field">
+          <label>Cash Balance</label>
+          <input id="pCash" type="number" value="100000" min="0" step="1000" />
+        </div>
+        <div class="actions">
+          <button onclick="createPortfolio()">Create portfolio</button>
+          <button class="secondary" onclick="setActiveFromCreate()">Use this ID after create</button>
+        </div>
+        <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 14px 0;">
+        <div class="field">
+          <label>Use existing portfolio ID</label>
+          <input id="existingId" placeholder="Enter portfolio id" />
+        </div>
+        <div class="actions">
+          <button onclick="applyExistingId()">Set active</button>
+          <button class="secondary" onclick="loadPortfolio()">Load snapshot</button>
+        </div>
+        <div class="status-bar" style="margin-top:12px;">
+          <div id="statusDot" class="status-dot"></div>
+          <div>
+            <div style="font-weight:700;">Active portfolio: <span id="activeId">none</span></div>
+            <div class="subtitle" id="activeHint">Set an ID to reuse across actions</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Step 2 — Seed Holdings</h2>
+          <div class="pill">POST /portfolios/{id}/holdings</div>
+        </div>
+        <p class="subtitle">Add starting positions to the active portfolio (or override with a custom ID).</p>
+        <div class="helper">
+          <div class="chip">Uses active portfolio unless you fill “Override ID”.</div>
+          <div class="chip">Prices are manual seeds; live marks still come from market data.</div>
+        </div>
+        <div class="field">
+          <label>Override Portfolio ID (optional)</label>
+          <input id="hPortfolio" placeholder="Leave blank to use active" />
+        </div>
+        <div class="field">
+          <label>Symbol</label>
+          <input id="hSymbol" value="AAPL" />
+        </div>
+        <div class="field">
+          <label>Quantity</label>
+          <input id="hQty" type="number" value="10" step="1" />
+        </div>
+        <div class="field">
+          <label>Price (seed)</label>
+          <input id="hPrice" type="number" value="100" step="0.01" />
+        </div>
+        <div class="actions">
+          <button onclick="addHolding()">Add holding</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Step 3 — Trade</h2>
+          <div class="pill">POST /orders</div>
+        </div>
+        <p class="subtitle">Place market orders. Uses the active portfolio by default.</p>
+        <div class="field">
+          <label>Override Portfolio ID (optional)</label>
+          <input id="oPortfolio" placeholder="Leave blank to use active" />
+        </div>
+        <div class="field">
+          <label>Symbol</label>
+          <input id="oSymbol" value="AAPL" />
+        </div>
+        <div class="field">
+          <label>Side</label>
+          <select id="oSide">
+            <option>BUY</option>
+            <option>SELL</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Quantity</label>
+          <input id="oQty" type="number" value="1" step="1" />
+        </div>
+        <div class="actions">
+          <button onclick="placeOrder()">Place order</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-header">
+          <h2>Step 4 — Portfolio Metrics</h2>
+          <div class="pill">GET /portfolios/{id}</div>
+        </div>
+        <p class="subtitle">Pull valuation and performance for the active portfolio.</p>
+        <div class="actions">
+          <button onclick="loadPortfolio()">Snapshot</button>
+          <button class="secondary" onclick="loadValue()">Total value</button>
+          <button class="secondary" onclick="loadPnl()">Unrealized P/L</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Step 5 — Risk</h2>
+          <div class="pill">GET /risk/*</div>
+        </div>
+        <p class="subtitle">Leverage the risk-service with existing endpoints only.</p>
+        <div class="field">
+          <label>Portfolio ID (defaults to active)</label>
+          <input id="rPortfolio" placeholder="Leave blank to use active" />
+        </div>
+        <div class="field">
+          <label>Symbol for volatility</label>
+          <input id="rSymbol" value="AAPL" />
+        </div>
+        <div class="actions">
+          <button onclick="loadVar()">VaR</button>
+          <button class="secondary" onclick="loadExposure()">Exposure</button>
+          <button class="secondary" onclick="loadVol()">Volatility</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Activity & Output</h2>
+          <div class="pill">JSON</div>
+        </div>
+        <p class="subtitle">Latest response from any action. Good for debugging.</p>
+        <div class="output" id="output">Ready</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const portfolioApi = 'http://localhost:8082';
+    const orderApi = 'http://localhost:8083';
+    const riskApi = 'http://localhost:8084';
+
+    const state = {
+      activeId: null
+    };
+
+    function updateStatus(label = 'Set an ID to reuse across actions') {
+      const activeEl = document.getElementById('activeId');
+      const dot = document.getElementById('statusDot');
+      document.getElementById('activeHint').textContent = label;
+      if (state.activeId) {
+        activeEl.textContent = state.activeId;
+        dot.classList.add('active');
+      } else {
+        activeEl.textContent = 'none';
+        dot.classList.remove('active');
+      }
+    }
+
+    function show(data, hint) {
+      const output = document.getElementById('output');
+      const text = hint ? `${hint}\n\n${JSON.stringify(data, null, 2)}` : JSON.stringify(data, null, 2);
+      output.textContent = text;
+    }
+
+    function showError(err, label = 'Error') {
+      show({ error: err.message || err }, label);
+    }
+
+    function getPortfolioId(preferredInputId) {
+      const override = preferredInputId && document.getElementById(preferredInputId).value;
+      if (override) return override;
+      if (state.activeId) return state.activeId;
+      throw new Error('No portfolio id set. Create one or set an existing ID first.');
+    }
+
+    async function apiCall(url, options, label) {
+      try {
+        const res = await fetch(url, options);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || res.statusText || 'Request failed');
+        show(data, label);
+        return data;
+      } catch (err) {
+        showError(err, label);
+        throw err;
+      }
+    }
+
+    async function createPortfolio() {
+      const name = document.getElementById('pName').value;
+      const cashBalance = parseFloat(document.getElementById('pCash').value);
+      const data = await apiCall(`${portfolioApi}/portfolios`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, cashBalance })
+      }, 'Created portfolio');
+      if (data.id) {
+        state.activeId = data.id;
+        document.getElementById('existingId').value = data.id;
+        updateStatus('Created and set as active');
+      }
+    }
+
+    function setActiveFromCreate() {
+      const id = document.getElementById('existingId').value || '';
+      if (!id) {
+        showError(new Error('Enter an ID from the create response first.'), 'Set active');
+        return;
+      }
+      state.activeId = id;
+      updateStatus('Active ID updated from create section');
+    }
+
+    function applyExistingId() {
+      const id = document.getElementById('existingId').value;
+      if (!id) {
+        showError(new Error('Enter an existing portfolio id to set active.'), 'Set active');
+        return;
+      }
+      state.activeId = id;
+      updateStatus('Using existing portfolio id');
+    }
+
+    async function addHolding() {
+      const id = getPortfolioId('hPortfolio');
+      const symbol = document.getElementById('hSymbol').value;
+      const quantity = parseFloat(document.getElementById('hQty').value);
+      const price = parseFloat(document.getElementById('hPrice').value);
+      await apiCall(`${portfolioApi}/portfolios/${id}/holdings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symbol, quantity, price })
+      }, `Added holding to ${id}`);
+    }
+
+    async function placeOrder() {
+      const id = getPortfolioId('oPortfolio');
+      const symbol = document.getElementById('oSymbol').value;
+      const side = document.getElementById('oSide').value;
+      const quantity = parseFloat(document.getElementById('oQty').value);
+      await apiCall(`${orderApi}/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ portfolioId: parseInt(id, 10), symbol, side, quantity })
+      }, `Order submitted for ${id}`);
+    }
+
+    async function loadPortfolio() {
+      const id = getPortfolioId('existingId');
+      await apiCall(`${portfolioApi}/portfolios/${id}`, undefined, `Snapshot for ${id}`);
+    }
+
+    async function loadValue() {
+      const id = getPortfolioId('existingId');
+      await apiCall(`${portfolioApi}/portfolios/${id}/value`, undefined, `Total value for ${id}`);
+    }
+
+    async function loadPnl() {
+      const id = getPortfolioId('existingId');
+      await apiCall(`${portfolioApi}/portfolios/${id}/pnl`, undefined, `P/L for ${id}`);
+    }
+
+    async function loadVar() {
+      const id = getPortfolioId('rPortfolio');
+      await apiCall(`${riskApi}/risk/var/${id}`, undefined, `VaR for ${id}`);
+    }
+
+    async function loadExposure() {
+      const id = getPortfolioId('rPortfolio');
+      await apiCall(`${riskApi}/risk/exposure/${id}`, undefined, `Exposure for ${id}`);
+    }
+
+    async function loadVol() {
+      const symbol = document.getElementById('rSymbol').value;
+      await apiCall(`${riskApi}/risk/volatility/${symbol}`, undefined, `Volatility for ${symbol}`);
+    }
+
+    updateStatus();
+  </script>
+</body>
+</html>
